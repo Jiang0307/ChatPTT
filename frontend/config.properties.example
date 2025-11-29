@@ -1,0 +1,21 @@
+# ChatPTT 前端配置文件
+# 請設置您的後端服務器地址
+
+# 後端 API 地址（HTTP）
+# 本地開發：http://localhost:8080
+# Railway 部署：https://your-app.railway.app
+server.url=http://localhost:8080
+
+# WebSocket 地址
+# 本地開發：ws://localhost:8080/chat
+# Railway 部署：wss://your-app.railway.app/chat
+# 注意：如果使用 HTTPS，WebSocket 需要使用 wss://
+websocket.url=ws://localhost:8080/chat
+
+# 使用說明：
+# 1. 將此文件複製為 config.properties（去掉 .example）
+# 2. 將 server.url 設置為您的後端服務器地址
+# 3. 將 websocket.url 設置為對應的 WebSocket 地址
+# 4. 如果後端使用 HTTPS，WebSocket 必須使用 wss://
+# 5. 如果後端使用 HTTP，WebSocket 使用 ws://
+

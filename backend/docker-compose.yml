@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # MySQL 資料庫服務
+  mysql:
+    image: mysql:8.0
+    container_name: chatptt-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: ChatPTT
+      MYSQL_USER: User
+      MYSQL_PASSWORD: 20010307
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - chatptt-network
+
+  # 後端服務
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chatptt-backend
+    environment:
+      # 資料庫連接配置（使用 docker-compose 服務名稱）
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ChatPTT
+      DB_USERNAME: User
+      DB_PASSWORD: 20010307
+      # 服務端口
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - chatptt-network
+
+volumes:
+  mysql_data:
+
+networks:
+  chatptt-network:
+    driver: bridge
+

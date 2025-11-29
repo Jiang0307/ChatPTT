@@ -1,0 +1,104 @@
+# Maven 構建產物
+**/target/
+**/pom.xml.tag
+**/pom.xml.releaseBackup
+**/pom.xml.versionsBackup
+**/pom.xml.next
+**/release.properties
+**/dependency-reduced-pom.xml
+**/buildNumber.properties
+**/.mvn/timing.properties
+**/.mvn/wrapper/maven-wrapper.jar
+
+# 編譯產物
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+
+# IDE 文件
+## IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+## Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+## VS Code
+.vscode/
+
+## NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# 環境變數和配置文件（包含敏感信息）
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/config.properties
+
+# 但保留範本文件
+!backend/env.example
+!backend/.env.example
+!frontend/config.properties.example
+
+# 系統文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# 日誌文件
+*.log
+logs/
+*.log.*
+
+# 臨時文件
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.cache/
+
+# 資料庫文件
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker 相關（可選，通常不需要忽略）
+# docker-compose.override.yml
+
+# Android 相關（Android SDK/Studio 生成的文件）
+.android/
+*.avd/
+adbkey
+adbkey.pub
+emulator-user.ini
+hardware-qemu.ini
+config.ini
+*.img
+*.qcow2
+*.lock
+
+# 其他
+*.bak
+*.backup
+
