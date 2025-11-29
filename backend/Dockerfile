@@ -4,9 +4,10 @@ FROM maven:3.9-eclipse-temurin-21 AS build
 # 設置工作目錄
 WORKDIR /app
 
-# 複製 pom.xml 和源代碼
-COPY pom.xml .
-COPY src ./src
+# 複製 backend 目錄的 pom.xml 和源代碼
+# 這樣無論 Railway 在根目錄還是 backend 目錄執行都能工作
+COPY backend/pom.xml ./pom.xml
+COPY backend/src ./src
 
 # 構建應用（跳過測試以加快構建速度）
 RUN mvn clean package -DskipTests
