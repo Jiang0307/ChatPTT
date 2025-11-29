@@ -14,7 +14,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # 第二階段 - 運行
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jdk
 
 # 設置工作目錄
 WORKDIR /app
