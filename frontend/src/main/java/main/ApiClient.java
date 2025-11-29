@@ -52,16 +52,53 @@ public class ApiClient {
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             
-            Map<String, Object> result = gson.fromJson(response.body(), new TypeToken<Map<String, Object>>(){}.getType());
-            boolean success = (Boolean) result.get("success");
+            // 檢查 HTTP 狀態碼
+            int statusCode = response.statusCode();
+            
+            // 檢查響應體是否為空
+            String responseBody = response.body();
+            if (responseBody == null || responseBody.trim().isEmpty()) {
+                return new LoginResponse(false, null, "伺服器無回應 (HTTP " + statusCode + ")");
+            }
+            
+            // 處理 Railway 的錯誤響應格式（502 等錯誤）
+            if (statusCode >= 500) {
+                try {
+                    Map<String, Object> errorResult = gson.fromJson(responseBody, new TypeToken<Map<String, Object>>(){}.getType());
+                    String errorMsg = errorResult.get("message") != null ? errorResult.get("message").toString() : "伺服器錯誤";
+                    return new LoginResponse(false, null, errorMsg + " (HTTP " + statusCode + ")");
+                } catch (Exception e) {
+                    return new LoginResponse(false, null, "伺服器錯誤 (HTTP " + statusCode + "): " + responseBody);
+                }
+            }
+            
+            if (statusCode < 200 || statusCode >= 300) {
+                return new LoginResponse(false, null, "請求失敗 (HTTP " + statusCode + ")");
+            }
+            
+            Map<String, Object> result = gson.fromJson(responseBody, new TypeToken<Map<String, Object>>(){}.getType());
+            
+            // 安全地獲取 success 字段
+            Object successObj = result.get("success");
+            if (successObj == null) {
+                System.err.println("後端響應格式錯誤，缺少 'success' 字段。響應內容: " + responseBody);
+                return new LoginResponse(false, null, "後端響應格式錯誤");
+            }
+            
+            boolean success = successObj instanceof Boolean ? (Boolean) successObj : Boolean.parseBoolean(successObj.toString());
             
             if (success) {
                 Map<String, Object> userMap = (Map<String, Object>) result.get("user");
+                if (userMap == null) {
+                    return new LoginResponse(false, null, "後端響應缺少用戶信息");
+                }
                 Users user = gson.fromJson(gson.toJson(userMap), Users.class);
                 this.currentUsername = user.username;
-                return new LoginResponse(true, user, (String) result.get("message"));
+                String message = result.get("message") != null ? result.get("message").toString() : "登入成功";
+                return new LoginResponse(true, user, message);
             } else {
-                return new LoginResponse(false, null, (String) result.get("message"));
+                String message = result.get("message") != null ? result.get("message").toString() : "登入失敗";
+                return new LoginResponse(false, null, message);
             }
         } catch (Exception e) {
             e.printStackTrace();
