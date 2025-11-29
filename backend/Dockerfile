@@ -28,4 +28,3 @@ EXPOSE 8080
 # 啟動應用
 # Railway 會自動設置 PORT 環境變數，Spring Boot 會自動讀取
 ENTRYPOINT ["java", "-jar", "app.jar"]
-
