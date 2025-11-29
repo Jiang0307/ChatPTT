@@ -5,7 +5,7 @@ FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
 # 複製 pom.xml 和源代碼
-# Railway 在根目錄執行，所以需要指定 backend/ 路徑
+# 支援從根目錄或 backend 目錄執行
 COPY backend/pom.xml ./pom.xml
 COPY backend/src ./src
 
