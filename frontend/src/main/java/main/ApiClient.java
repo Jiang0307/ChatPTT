@@ -377,6 +377,42 @@ public class ApiClient {
         }
     }
 
+    // 批量獲取文章詳情（讚數、留言數、留言列表、是否按讚）
+    public ArticleDetails getArticleDetails(int articleId) {
+        try {
+            String url = baseUrl + "/api/articles/" + articleId + "/details";
+            if (currentUsername != null && !currentUsername.isEmpty()) {
+                url += "?username=" + java.net.URLEncoder.encode(currentUsername, "UTF-8");
+            }
+            
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .GET()
+                    .build();
+            
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            Map<String, Object> result = gson.fromJson(response.body(), new TypeToken<Map<String, Object>>(){}.getType());
+            
+            // 解析結果
+            boolean liked = result.get("liked") != null && (Boolean) result.get("liked");
+            int likeNumber = ((Double) result.get("likeNumber")).intValue();
+            int commentNumber = ((Double) result.get("commentNumber")).intValue();
+            
+            // 解析留言列表
+            String commentsJson = gson.toJson(result.get("comments"));
+            Comments[] commentsArray = gson.fromJson(commentsJson, Comments[].class);
+            ArrayList<Comments> comments = new ArrayList<>();
+            for (Comments comment : commentsArray) {
+                comments.add(comment);
+            }
+            
+            return new ArticleDetails(liked, likeNumber, commentNumber, comments);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     // 登入響應類
     public static class LoginResponse {
         private boolean success;
@@ -399,6 +435,21 @@ public class ApiClient {
 
         public String getMessage() {
             return message;
+        }
+    }
+
+    // 文章詳情類（用於批量 API）
+    public static class ArticleDetails {
+        public boolean liked;
+        public int likeNumber;
+        public int commentNumber;
+        public ArrayList<Comments> comments;
+        
+        public ArticleDetails(boolean liked, int likeNumber, int commentNumber, ArrayList<Comments> comments) {
+            this.liked = liked;
+            this.likeNumber = likeNumber;
+            this.commentNumber = commentNumber;
+            this.comments = comments;
         }
     }
 }

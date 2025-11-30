@@ -1,6 +1,7 @@
 package com.chatptt.controller;
 
 import com.chatptt.model.Articles;
+import com.chatptt.model.Comments;
 import com.chatptt.service.DBConnectionService;
 import com.chatptt.websocket.ChatWebSocketServer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,5 +82,38 @@ public class ArticleController {
         boolean alive = dbService.checkArticleAlive(id);
         response.put("alive", alive);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{articleId}/details")
+    public ResponseEntity<Map<String, Object>> getArticleDetails(
+            @PathVariable int articleId,
+            @RequestParam(required = false) String username) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // 依次調用現有的 dbService 方法
+            int likeNumber = dbService.getLikeNumber(articleId);
+            int commentNumber = dbService.getCommentNumber(articleId);
+            List<Comments> comments = dbService.getComments(articleId);
+            boolean liked = false;
+            
+            // 如果提供了 username，檢查是否已按讚
+            if (username != null && !username.isEmpty()) {
+                liked = dbService.checkLiked(username, articleId);
+            }
+            
+            // 組裝結果
+            response.put("likeNumber", likeNumber);
+            response.put("commentNumber", commentNumber);
+            response.put("comments", comments);
+            response.put("liked", liked);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("error", "獲取文章詳情失敗");
+            return ResponseEntity.status(500).body(response);
+        }
     }
 }

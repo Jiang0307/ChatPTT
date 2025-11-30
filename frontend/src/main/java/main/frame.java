@@ -1163,7 +1163,37 @@ public class frame extends JFrame
 	
 	public void reset_ArticleReadPanel(int idx) {
 		
-		if(apiClient.checkLiked(articles.get(idx).article_ID))
+		// 使用批量 API 獲取所有數據（單一 HTTP 請求）
+		ApiClient.ArticleDetails details = apiClient.getArticleDetails(articles.get(idx).article_ID);
+		if (details == null) {
+			// 如果獲取失敗，使用舊的方式作為後備
+			if(apiClient.checkLiked(articles.get(idx).article_ID))
+				P6_btnLike.setBackground(MyGlobal.colorSky);
+			else
+				P6_btnLike.setBackground(MyGlobal.colorWhite);
+			
+			articles.get(idx).likeNumber = apiClient.getLikeNumber(articles.get(idx).article_ID);
+			articles.get(idx).commentNumber = apiClient.getCommentNumber(articles.get(idx).article_ID);
+			ArrayList<Comments> comments = apiClient.getComments(articles.get(idx).article_ID);
+			
+			ArticleReadPanel.remove(P6_ArticleScrollPane);
+			P6_ArticleScrollPane.removeAll();
+			P6_ArticleScrollPane = new JScrollPane();
+			P6_ArticleScrollPane.setBorder(MyGlobal.RoundText);
+			P6_ArticleScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+			P6_ArticleScrollPane.setBounds(60, 135, 380, 531);
+			P6_ArticleScrollPane.getVerticalScrollBar().setValue(P6_ArticleScrollPane.getVerticalScrollBar().getMinimum());
+			P6_lbSystemHint.setText("<對其發送留言吧！>");
+			P6_textComment.setText("");
+			
+			ArticleReadUnitPanel tmpPanel = new ArticleReadUnitPanel(articles.get(idx), comments, 361);
+			P6_ArticleScrollPane.setViewportView(tmpPanel);
+			ArticleReadPanel.add(P6_ArticleScrollPane);
+			return;
+		}
+		
+		// 使用批量 API 返回的數據更新 UI
+		if(details.liked)
 			P6_btnLike.setBackground(MyGlobal.colorSky);
 		else
 			P6_btnLike.setBackground(MyGlobal.colorWhite);
@@ -1178,11 +1208,10 @@ public class frame extends JFrame
 		P6_lbSystemHint.setText("<對其發送留言吧！>");
 		P6_textComment.setText("");
 
-		articles.get(idx).likeNumber = apiClient.getLikeNumber(articles.get(idx).article_ID);
-	    articles.get(idx).commentNumber = apiClient.getCommentNumber(articles.get(idx).article_ID);
+		articles.get(idx).likeNumber = details.likeNumber;
+	    articles.get(idx).commentNumber = details.commentNumber;
 			    
-		ArrayList<Comments> comments = apiClient.getComments(articles.get(idx).article_ID);
-		ArticleReadUnitPanel tmpPanel = new ArticleReadUnitPanel(articles.get(idx),comments, 361);
+		ArticleReadUnitPanel tmpPanel = new ArticleReadUnitPanel(articles.get(idx), details.comments, 361);
 		P6_ArticleScrollPane.setViewportView(tmpPanel);
 		ArticleReadPanel.add(P6_ArticleScrollPane);
 	}
