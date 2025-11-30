@@ -8,6 +8,7 @@ import java.util.Properties;
  */
 public class ConfigManager {
     private static final String CONFIG_FILE = "config.properties";
+    // 預設值僅用於開發環境或配置文件讀取失敗時的後備
     private static final String DEFAULT_SERVER_URL = "http://localhost:8080";
     private static final String DEFAULT_WEBSOCKET_URL = "ws://localhost:8080/chat";
     
@@ -50,17 +51,15 @@ public class ConfigManager {
             writer.println("# ChatPTT 前端配置文件");
             writer.println("# 請設置您的後端服務器地址");
             writer.println();
-            writer.println("# 後端 API 地址（HTTP）");
+            writer.println("# 後端 API 地址");
+            writer.println("# 開發環境: http://localhost:8080");
+            writer.println("# 生產環境: https://chatptt.up.railway.app");
             writer.println("server.url=" + DEFAULT_SERVER_URL);
             writer.println();
             writer.println("# WebSocket 地址");
+            writer.println("# 開發環境: ws://localhost:8080/chat");
+            writer.println("# 生產環境: wss://chatptt.up.railway.app/chat");
             writer.println("websocket.url=" + DEFAULT_WEBSOCKET_URL);
-            writer.println();
-            writer.println("# 使用說明：");
-            writer.println("# 1. 將 server.url 設置為您的後端服務器地址");
-            writer.println("# 2. 將 websocket.url 設置為對應的 WebSocket 地址");
-            writer.println("# 3. 例如：server.url=https://your-app.railway.app");
-            writer.println("# 4. 例如：websocket.url=wss://your-app.railway.app/chat");
             
             System.out.println("已創建預設配置文件: " + configFile.getAbsolutePath());
             System.out.println("請編輯配置文件設置後端服務器地址");
@@ -115,4 +114,3 @@ public class ConfigManager {
         }
     }
 }
-

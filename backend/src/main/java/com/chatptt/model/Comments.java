@@ -10,6 +10,3 @@ public class Comments {
     public Date times;
     public String nickname;
 }
-
-
-

@@ -10,6 +10,3 @@ public class ChatPttApplication {
         SpringApplication.run(ChatPttApplication.class, args);
     }
 }
-
-
-
