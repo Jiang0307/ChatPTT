@@ -20,7 +20,7 @@ public class ArticleController {
     private DBConnectionService dbService;
 
     @GetMapping
-    public ResponseEntity<List<Articles>> getArticles(@RequestParam(required = false, defaultValue = "全部") String classParam) {
+    public ResponseEntity<List<Articles>> getArticles(@RequestParam(value = "class", required = false, defaultValue = "全部") String classParam) {
         List<Articles> articles = dbService.getArticles(classParam);
         if (articles != null) {
             return ResponseEntity.ok(articles);
