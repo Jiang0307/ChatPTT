@@ -219,62 +219,154 @@ public class DBConnectionService {
     }
 
     public boolean deleteUser(String username, String passwords) {
+        // 去除前後空白字符
+        if (username != null) {
+            username = username.trim();
+        }
+        if (passwords != null) {
+            passwords = passwords.trim();
+        }
+        
+        System.out.println(String.format("[刪除用戶] 開始刪除用戶: username='%s'", username));
+        
+        String sql = "DELETE FROM Users WHERE Username = ? AND Passwords = ?";
+        System.out.println(String.format("[刪除用戶] SQL 查詢: %s", sql));
+        
         try (Connection conn = getConnection();
-             Statement stmt = conn.createStatement()) {
-            String sql = String.format("DELETE FROM Users WHERE Username = '%s' AND Passwords = '%s';", username, passwords);
-            System.out.println(sql);
-            stmt.executeUpdate(sql);
-            return true;
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, username);
+            pstmt.setString(2, passwords);
+            
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println(String.format("[刪除用戶] 刪除成功: username='%s', 影響行數=%d", username, rowsAffected));
+                return true;
+            } else {
+                System.out.println(String.format("[刪除用戶] 刪除失敗: 找不到匹配的用戶 (username='%s')", username));
+                return false;
+            }
         } catch (SQLException se) {
+            System.err.println(String.format("[刪除用戶] SQL 異常: %s", se.getMessage()));
             se.printStackTrace();
+            return false;
+        } catch (Exception e) {
+            System.err.println(String.format("[刪除用戶] 未知異常: %s", e.getMessage()));
+            e.printStackTrace();
             return false;
         }
     }
 
     public boolean updateUser(String username, String newPasswords, String newNickname) {
-        try (Connection conn = getConnection();
-             Statement stmt = conn.createStatement()) {
-            if (newPasswords.length() != 0 && newNickname.length() == 0) {
+        // 去除前後空白字符
+        if (username != null) {
+            username = username.trim();
+        }
+        if (newPasswords != null) {
+            newPasswords = newPasswords.trim();
+        }
+        if (newNickname != null) {
+            newNickname = newNickname.trim();
+        }
+        
+        System.out.println(String.format("[更新用戶] 開始更新用戶: username='%s'", username));
+        
+        try (Connection conn = getConnection()) {
+            String sql;
+            PreparedStatement pstmt;
+            
+            if (newPasswords != null && !newPasswords.isEmpty() && (newNickname == null || newNickname.isEmpty())) {
                 // 只更新密碼
-                String sql = String.format("UPDATE Users SET Passwords='%s' WHERE Username='%s'", newPasswords, username);
-                System.out.println(sql);
-                stmt.executeUpdate(sql);
-            } else if (newPasswords.length() == 0 && newNickname.length() != 0) {
+                sql = "UPDATE Users SET Passwords = ? WHERE Username = ?";
+                System.out.println(String.format("[更新用戶] 只更新密碼: SQL=%s", sql));
+                pstmt = conn.prepareStatement(sql);
+                pstmt.setString(1, newPasswords);
+                pstmt.setString(2, username);
+            } else if ((newPasswords == null || newPasswords.isEmpty()) && newNickname != null && !newNickname.isEmpty()) {
                 // 只更新暱稱
-                String sql = String.format("UPDATE Users SET Nickname='%s' WHERE Username='%s'", newNickname, username);
-                System.out.println(sql);
-                stmt.executeUpdate(sql);
-            } else {
+                sql = "UPDATE Users SET Nickname = ? WHERE Username = ?";
+                System.out.println(String.format("[更新用戶] 只更新暱稱: SQL=%s", sql));
+                pstmt = conn.prepareStatement(sql);
+                pstmt.setString(1, newNickname);
+                pstmt.setString(2, username);
+            } else if (newPasswords != null && !newPasswords.isEmpty() && newNickname != null && !newNickname.isEmpty()) {
                 // 更新兩者
-                String sql = String.format("UPDATE Users SET Passwords='%s', Nickname='%s' WHERE Username='%s'", newPasswords, newNickname, username);
-                System.out.println(sql);
-                stmt.executeUpdate(sql);
+                sql = "UPDATE Users SET Passwords = ?, Nickname = ? WHERE Username = ?";
+                System.out.println(String.format("[更新用戶] 更新密碼和暱稱: SQL=%s", sql));
+                pstmt = conn.prepareStatement(sql);
+                pstmt.setString(1, newPasswords);
+                pstmt.setString(2, newNickname);
+                pstmt.setString(3, username);
+            } else {
+                System.out.println(String.format("[更新用戶] 更新失敗: 沒有要更新的欄位 (username='%s')", username));
+                return false;
             }
-            return true;
+            
+            try (pstmt) {
+                int rowsAffected = pstmt.executeUpdate();
+                if (rowsAffected > 0) {
+                    System.out.println(String.format("[更新用戶] 更新成功: username='%s', 影響行數=%d", username, rowsAffected));
+                    return true;
+                } else {
+                    System.out.println(String.format("[更新用戶] 更新失敗: 找不到用戶 (username='%s')", username));
+                    return false;
+                }
+            }
         } catch (SQLException se) {
+            System.err.println(String.format("[更新用戶] SQL 異常: %s", se.getMessage()));
             se.printStackTrace();
+            return false;
+        } catch (Exception e) {
+            System.err.println(String.format("[更新用戶] 未知異常: %s", e.getMessage()));
+            e.printStackTrace();
             return false;
         }
     }
 
     public Users verifyLogin(String username, String passwords) {
+        // 去除前後空白字符
+        if (username != null) {
+            username = username.trim();
+        }
+        if (passwords != null) {
+            passwords = passwords.trim();
+        }
+        
+        System.out.println(String.format("[登入驗證] 開始驗證用戶: username='%s', password='%s'", username, passwords != null ? "***" : "null"));
+        
+        String sql = "SELECT * FROM Users WHERE Username = ? AND Passwords = ?";
+        System.out.println(String.format("[登入驗證] SQL 查詢: %s", sql));
+        
         try (Connection conn = getConnection();
-             Statement stmt = conn.createStatement()) {
-            String sql = String.format("SELECT * FROM Users WHERE Username='%s' AND Passwords='%s'", username, passwords);
-            System.out.println(sql);
-            ResultSet rs = stmt.executeQuery(sql);
-            if (rs.next()) {
-                Users userInfo = new Users();
-                userInfo.username = rs.getString("Username");
-                userInfo.passwords = rs.getString("Passwords");
-                userInfo.nickname = rs.getString("Nickname");
-                System.out.println(String.format("成功取得使用者資訊: %s, %s, %s", userInfo.username, userInfo.passwords, userInfo.nickname));
-                return userInfo;
-            } else {
-                return null;
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            // 設置參數
+            pstmt.setString(1, username);
+            pstmt.setString(2, passwords);
+            
+            System.out.println(String.format("[登入驗證] 執行查詢，參數: username='%s'", username));
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    Users userInfo = new Users();
+                    userInfo.username = rs.getString("Username");
+                    userInfo.passwords = rs.getString("Passwords");
+                    userInfo.nickname = rs.getString("Nickname");
+                    System.out.println(String.format("[登入驗證] 成功取得使用者資訊: username=%s, nickname=%s", 
+                            userInfo.username, userInfo.nickname));
+                    return userInfo;
+                } else {
+                    System.out.println(String.format("[登入驗證] 查詢失敗: 找不到匹配的用戶 (username='%s')", username));
+                    return null;
+                }
             }
         } catch (SQLException se) {
+            System.err.println(String.format("[登入驗證] SQL 異常: %s", se.getMessage()));
             se.printStackTrace();
+            return null;
+        } catch (Exception e) {
+            System.err.println(String.format("[登入驗證] 未知異常: %s", e.getMessage()));
+            e.printStackTrace();
             return null;
         }
     }
@@ -305,21 +397,59 @@ public class DBConnectionService {
     }
 
     public boolean signUp(String username, String passwords, String nickname) {
-        try (Connection conn = getConnection();
-             Statement stmt = conn.createStatement()) {
-            String sql0 = String.format("SELECT * FROM Users WHERE Username = '%s';", username);
-            System.out.println(sql0);
-            ResultSet rs = stmt.executeQuery(sql0);
-            if (rs.next()) {
-                return false; // 用戶已存在
-            } else {
-                String sql = String.format("INSERT INTO Users VALUES ('%s' , '%s' , '%s')", username, passwords, nickname);
-                System.out.println(sql);
-                stmt.executeUpdate(sql);
-                return true;
+        // 去除前後空白字符
+        if (username != null) {
+            username = username.trim();
+        }
+        if (passwords != null) {
+            passwords = passwords.trim();
+        }
+        if (nickname != null) {
+            nickname = nickname.trim();
+        }
+        
+        System.out.println(String.format("[註冊] 開始註冊用戶: username='%s', nickname='%s'", username, nickname));
+        
+        try (Connection conn = getConnection()) {
+            // 檢查用戶是否已存在
+            String checkSql = "SELECT * FROM Users WHERE Username = ?";
+            System.out.println(String.format("[註冊] 檢查用戶是否存在: SQL=%s", checkSql));
+            
+            try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+                checkStmt.setString(1, username);
+                try (ResultSet rs = checkStmt.executeQuery()) {
+                    if (rs.next()) {
+                        System.out.println(String.format("[註冊] 註冊失敗: 用戶名 '%s' 已存在", username));
+                        return false; // 用戶已存在
+                    }
+                }
+            }
+            
+            // 插入新用戶
+            String insertSql = "INSERT INTO Users (Username, Passwords, Nickname) VALUES (?, ?, ?)";
+            System.out.println(String.format("[註冊] 插入新用戶: SQL=%s", insertSql));
+            
+            try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                insertStmt.setString(1, username);
+                insertStmt.setString(2, passwords);
+                insertStmt.setString(3, nickname);
+                
+                int rowsAffected = insertStmt.executeUpdate();
+                if (rowsAffected > 0) {
+                    System.out.println(String.format("[註冊] 註冊成功: username='%s', nickname='%s'", username, nickname));
+                    return true;
+                } else {
+                    System.out.println(String.format("[註冊] 註冊失敗: 沒有行被插入 (username='%s')", username));
+                    return false;
+                }
             }
         } catch (SQLException se) {
+            System.err.println(String.format("[註冊] SQL 異常: %s", se.getMessage()));
             se.printStackTrace();
+            return false;
+        } catch (Exception e) {
+            System.err.println(String.format("[註冊] 未知異常: %s", e.getMessage()));
+            e.printStackTrace();
             return false;
         }
     }
