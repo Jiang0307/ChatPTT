@@ -1,4 +1,4 @@
-package com.chatptt.websocket;
+package chatptt.websocket;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -48,4 +48,3 @@ public class ChatWebSocketServer extends TextWebSocketHandler {
         });
     }
 }
-

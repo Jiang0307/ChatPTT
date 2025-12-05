@@ -1,8 +1,8 @@
-package com.chatptt.service;
+package chatptt.service;
 
-import com.chatptt.model.Articles;
-import com.chatptt.model.Comments;
-import com.chatptt.model.Users;
+import chatptt.model.Articles;
+import chatptt.model.Comments;
+import chatptt.model.Users;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -454,5 +454,3 @@ public class DBConnectionService {
         }
     }
 }
-
-

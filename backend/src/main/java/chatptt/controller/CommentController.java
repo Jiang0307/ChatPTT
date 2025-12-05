@@ -1,8 +1,8 @@
-package com.chatptt.controller;
+package chatptt.controller;
 
-import com.chatptt.model.Comments;
-import com.chatptt.service.DBConnectionService;
-import com.chatptt.websocket.ChatWebSocketServer;
+import chatptt.model.Comments;
+import chatptt.service.DBConnectionService;
+import chatptt.websocket.ChatWebSocketServer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

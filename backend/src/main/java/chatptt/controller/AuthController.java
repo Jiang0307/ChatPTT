@@ -1,7 +1,7 @@
-package com.chatptt.controller;
+package chatptt.controller;
 
-import com.chatptt.model.Users;
-import com.chatptt.service.DBConnectionService;
+import chatptt.model.Users;
+import chatptt.service.DBConnectionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

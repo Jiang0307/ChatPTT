@@ -1,4 +1,4 @@
-package com.chatptt.model;
+package chatptt.model;
 
 public class Users {
     public String username;

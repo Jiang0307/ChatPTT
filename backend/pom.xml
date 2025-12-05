@@ -12,7 +12,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.chatptt</groupId>
+    <groupId>chatptt</groupId>
     <artifactId>chatptt-backend</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>

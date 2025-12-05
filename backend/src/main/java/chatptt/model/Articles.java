@@ -1,4 +1,4 @@
-package com.chatptt.model;
+package chatptt.model;
 
 import java.util.Date;
 
