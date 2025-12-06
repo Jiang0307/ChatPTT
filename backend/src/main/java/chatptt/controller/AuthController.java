@@ -29,7 +29,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        Users user = dbService.verifyLogin(username, password);
+        Users user = dbService.login(username, password);
         if (user != null) {
             response.put("success", true);
             response.put("user", user);
@@ -57,7 +57,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        boolean result = dbService.signUp(username, password, nickname);
+        boolean result = dbService.signup(username, password, nickname);
         if (result) {
             response.put("success", true);
             response.put("message", "註冊成功");
@@ -69,3 +69,4 @@ public class AuthController {
         }
     }
 }
+

@@ -13,3 +13,4 @@ public class Articles {
     public int likeNumber = 0;
     public int commentNumber = 0;
 }
+

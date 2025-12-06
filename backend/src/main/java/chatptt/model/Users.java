@@ -5,3 +5,4 @@ public class Users {
     public String passwords;
     public String nickname;
 }
+

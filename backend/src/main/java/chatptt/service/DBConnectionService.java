@@ -323,7 +323,7 @@ public class DBConnectionService {
         }
     }
 
-    public Users verifyLogin(String username, String passwords) {
+    public Users login(String username, String passwords) {
         // 去除前後空白字符
         if (username != null) {
             username = username.trim();
@@ -396,7 +396,7 @@ public class DBConnectionService {
         }
     }
 
-    public boolean signUp(String username, String passwords, String nickname) {
+    public boolean signup(String username, String passwords, String nickname) {
         // 去除前後空白字符
         if (username != null) {
             username = username.trim();
@@ -454,3 +454,4 @@ public class DBConnectionService {
         }
     }
 }
+
