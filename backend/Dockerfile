@@ -5,7 +5,7 @@ FROM maven:3.9-eclipse-temurin-21
 WORKDIR /app
 
 # 複製 pom.xml 和源代碼
-# Root directory 已設置為 backend，所以直接複製當前目錄的文件
+# 支援從根目錄或 backend 目錄執行
 COPY pom.xml ./pom.xml
 COPY src ./src
 
