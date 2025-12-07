@@ -128,6 +128,45 @@ public class DBConnectionService {
     }
 
     public ArrayList<Comments> getComments(int articleId) {
+        // ============================================
+        // 優化版本：使用 JOIN 一次查詢取得所有資料
+        // ============================================
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(
+                "SELECT c.Comment_ID, c.Username, c.Article_ID, c.Content, c.Times, u.Nickname " +
+                "FROM Comments c " +
+                "LEFT JOIN Users u ON c.Username = u.Username " +
+                "WHERE c.Article_ID = ? " +
+                "ORDER BY c.Times ASC")) {
+            
+            pstmt.setInt(1, articleId);
+            System.out.println("📝 [JOIN 優化] 查詢留言: Article_ID=" + articleId);
+            
+            ArrayList<Comments> results = new ArrayList<>();
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Comments tmp = new Comments();
+                    tmp.comment_ID = rs.getInt("Comment_ID");
+                    tmp.username = rs.getString("Username");
+                    tmp.article_ID = rs.getInt("Article_ID");
+                    tmp.content = rs.getString("Content");
+                    tmp.times = rs.getTimestamp("Times");
+                    tmp.nickname = rs.getString("Nickname"); // 直接從 JOIN 取得
+                    results.add(tmp);
+                }
+            }
+            System.out.println("✅ [JOIN 優化] 取得 " + results.size() + " 筆留言");
+            return results;
+        } catch (SQLException se) {
+            System.err.println("❌ [JOIN 優化] 查詢留言失敗: " + se.getMessage());
+            se.printStackTrace();
+            return null;
+        }
+        
+        // ============================================
+        // 原本的版本（已註解保留，供參考）
+        // ============================================
+        /*
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
             ArrayList<Comments> results = new ArrayList<>();
@@ -158,6 +197,7 @@ public class DBConnectionService {
             se.printStackTrace();
             return null;
         }
+        */
     }
 
     public boolean checkArticleAlive(int articleId) {
@@ -174,6 +214,74 @@ public class DBConnectionService {
     }
 
     public ArrayList<Articles> getArticles(String articleClass) {
+        // ============================================
+        // 優化版本：使用 JOIN 一次查詢取得所有資料（包含統計）
+        // ============================================
+        try (Connection conn = getConnection()) {
+            // 建立 SQL 查詢（使用 JOIN 和 GROUP BY 統計）
+            StringBuilder sqlBuilder = new StringBuilder(
+                "SELECT " +
+                "    a.Article_ID, " +
+                "    a.Username, " +
+                "    a.Title, " +
+                "    a.Class, " +
+                "    a.Content, " +
+                "    a.Times, " +
+                "    u.Nickname, " +
+                "    COUNT(DISTINCT l.Username) as likeNumber, " +
+                "    COUNT(DISTINCT c.Comment_ID) as commentNumber " +
+                "FROM Articles a " +
+                "LEFT JOIN Users u ON a.Username = u.Username " +
+                "LEFT JOIN Likes l ON a.Article_ID = l.Article_ID " +
+                "LEFT JOIN Comments c ON a.Article_ID = c.Article_ID "
+            );
+            
+            // 根據分類添加 WHERE 條件
+            PreparedStatement pstmt;
+            if (articleClass != null && !articleClass.equals("全部")) {
+                sqlBuilder.append("WHERE a.Class = ? ");
+                sqlBuilder.append("GROUP BY a.Article_ID, a.Username, a.Title, a.Class, a.Content, a.Times, u.Nickname ");
+                sqlBuilder.append("ORDER BY a.Times DESC");
+                
+                pstmt = conn.prepareStatement(sqlBuilder.toString());
+                pstmt.setString(1, articleClass);
+                System.out.println("📰 [JOIN 優化] 查詢分類文章: Class=" + articleClass);
+            } else {
+                sqlBuilder.append("GROUP BY a.Article_ID, a.Username, a.Title, a.Class, a.Content, a.Times, u.Nickname ");
+                sqlBuilder.append("ORDER BY a.Times DESC");
+                
+                pstmt = conn.prepareStatement(sqlBuilder.toString());
+                System.out.println("📰 [JOIN 優化] 查詢全部文章");
+            }
+            
+            ArrayList<Articles> results = new ArrayList<>();
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Articles tmp = new Articles();
+                    tmp.article_ID = rs.getInt("Article_ID");
+                    tmp.username = rs.getString("Username");
+                    tmp.title = rs.getString("Title");
+                    tmp.articleClass = rs.getString("Class");
+                    tmp.content = rs.getString("Content");
+                    tmp.times = rs.getTimestamp("Times");
+                    tmp.nickname = rs.getString("Nickname"); // 直接從 JOIN 取得
+                    tmp.likeNumber = rs.getInt("likeNumber"); // 直接從 COUNT 取得
+                    tmp.commentNumber = rs.getInt("commentNumber"); // 直接從 COUNT 取得
+                    results.add(tmp);
+                }
+            }
+            System.out.println("✅ [JOIN 優化] 取得 " + results.size() + " 筆文章");
+            return results;
+        } catch (SQLException se) {
+            System.err.println("❌ [JOIN 優化] 查詢文章失敗: " + se.getMessage());
+            se.printStackTrace();
+            return null;
+        }
+        
+        // ============================================
+        // 原本的版本（已註解保留，供參考）
+        // ============================================
+        /*
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
             ArrayList<Articles> results = new ArrayList<>();
@@ -216,6 +324,7 @@ public class DBConnectionService {
             se.printStackTrace();
             return null;
         }
+        */
     }
 
     public boolean deleteUser(String username, String passwords) {
